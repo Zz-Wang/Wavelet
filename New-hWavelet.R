@@ -1,5 +1,13 @@
-setwd("P:")
-rm(list=ls(all=TRUE))
+
+setwd("/Users/zhwaaa/Documents/GitHub/Wavelet/")
+#rm(list=ls(all=TRUE))
+
+#used 
+library(waveslim)
+library(hts)
+library(rugarch)
+
+#not used
 library(spd)
 library(MARSS)
 library(tseries)
@@ -21,9 +29,11 @@ library(DEoptim)
 library(robustbase)
 library(tsDyn)
 library(parma)
-library(waveslim)
-library(hts)
-Returns<-read.csv("./Returns (OMXS30 Daily).csv",header=TRUE, sep=";")
+
+
+
+#read data
+Returns<-read.csv("./Returns-OMXS30-Daily.csv",header=TRUE, sep=";")
 DataType<-"OMXS30 Daily"
 ######################Model#############################
 model<-"h.modwt.haar.Wavelet.AR.sGARCH.STD"
@@ -39,6 +49,8 @@ a<-0.1                            #0.1 or 0.05
 GarchType<-"sGARCH"               #or gjrGARCH or iGARCH
 ARMAOrder<-c(1, 0)                #or c(1,1)
 Wave.<-function(x){
+  library(waveslim)
+  library(hts)
   p_modwt <- modwt(x, wf = waveletType, n.level = n_level, boundary = waveletBound)
   p_modwt.m <- matrix(unlist(p_modwt), ncol = n_level+1, byrow = F)
   colnames(p_modwt.m)<-names(p_modwt)
@@ -80,6 +92,7 @@ Wave.<-function(x){
 }
 
 Forecasting.Model<-function(x){
+  library(rugarch)
   Wavelet.<-Wave.(x)
   all.series<-Wavelet.[[1]]
   no.<-dim(all.series)[2]
@@ -105,10 +118,15 @@ Forecasting.Model<-function(x){
 
 Forecast<- matrix(NA, ncol = 6, nrow =(3-0))
 colnames(Forecast)<-c("Mu","S","WMu","WS","VaR","wVaR")
+
+
+### core
 for(i in 1:nrow(Forecast)){
   cat(i,"",fill = T)
   Forecast[i,]<-Forecasting.Model(Returns[(i+0):(i+0+EWL-1),])
 }
+
+
 #Out.Sample<-Returns[(1+EWL):(dim(Returns )[1]),]
 #VaRTest(alpha = a, actual=Out.Sample, VaR=Forecast[,4], conf.level = 0.95)
 #plot(Out.Sample,type="l")
